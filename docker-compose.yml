@@ -1,0 +1,40 @@
+services:
+  # 1. Сервис базы данных PostgreSQL (теперь он один)
+  db:
+    image: postgres:15-alpine
+    container_name: postgr_db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=n8nback  # <-- 1. Говорим Postgres создать эту БД при старте
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      # 2. Проверяем ту БД, которую создали:
+      test: ["CMD-SHELL", "pg_isready -U admin -d n8nback"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # 4. Ваш сервис FastAPI (web)
+  web:
+    build: .
+
+    command: sh -c "alembic upgrade head && python run.py"
+
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
