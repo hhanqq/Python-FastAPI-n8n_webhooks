@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 
 from app.core.config import settings
-from app.routers import users, auth, admin, emails
+from app.routers import users, auth, admin, email
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api", tags=["Auth"])
     app.include_router(users.router, prefix="/api", tags=["Users"])
     app.include_router(admin.router, prefix="/api", tags=["Admin"])
-    app.include_router(emails.router, prefix="/api", tags=["Emails"])
+    app.include_router(email.router, prefix="/api", tags=["Emails"])
 
     return app
 

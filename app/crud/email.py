@@ -37,3 +37,28 @@ async def get_all_emails(db: AsyncSession):
     query = select(Email).order_by(Email.id)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def remove_email(db: AsyncSession, email_id: int):
+    result = await db.execute(
+        select(Email).where(Email.id == email_id)
+    )
+    email = result.scalar_one_or_none()
+
+    if not email:
+        return None
+
+    await db.delete(email)
+    await db.commit()
+    return email
+
+
+async def edit_email(db: AsyncSession, email: Email, email_id: int):
+    result = await db.execute(
+        select(Email).where(Email.id == email_id)
+    )
+    email = result.scalar_one_or_none()
+
+    if not email:
+        return None
+

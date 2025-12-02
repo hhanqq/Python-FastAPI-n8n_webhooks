@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.schemas.email import EmailCreate, EmailResponse, EmailUpdateStatus
 from app.models.email import EmailStatus
-from app.crud.email import create_email, get_emails_on_approval, get_email_by_id, update_email_status
+from app.crud.email import create_email, get_emails_on_approval, get_email_by_id, update_email_status, remove_email
 from app.services.n8n_wh_emails import send_email_to_n8n
 from app.utils.dependencies import get_current_user
 from app.schemas.user import UserPublic
@@ -128,3 +128,15 @@ async def get_emails_all(
         current_user: Annotated[UserPublic, Depends(get_current_user)],
 ):
     return await get_all_emails(db)
+
+
+@router.delete(
+    "/{email_id}/delete",
+    response_model=EmailResponse,
+)
+async def delete_email(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[UserPublic, Depends(get_current_user)],
+        email_id: int = Path(..., description="ID письма в базе данных", ge=1),
+):
+    return await remove_email(db, email_id)
