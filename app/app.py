@@ -4,6 +4,9 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.routers import users, auth, admin, emails
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 def create_app() -> FastAPI:
     """Создание FastAPI приложения"""
     logging.basicConfig(level=settings.LOG_LEVEL)

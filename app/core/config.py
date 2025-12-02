@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 import os
 
 
-env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+env_path = '.env'
 
 class Settings(BaseSettings):
     SECRET_KEY: str
