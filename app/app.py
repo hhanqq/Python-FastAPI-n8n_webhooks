@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
 
     origins = [
         "https://medium-mails.domen1.com/api/",
-        "https://medium-mails.domen1.com"
+        "https://medium-mails.domen1.com",
         "http://localhost:5173",
     ]
     app.add_middleware(
