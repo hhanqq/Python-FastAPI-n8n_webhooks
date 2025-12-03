@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.email import Email, EmailStatus
-from app.schemas.email import EmailCreate
+from app.schemas.email import EmailCreate, EmailUpdate
 
 async def create_email(db: AsyncSession, email_in: EmailCreate) -> Email:
     db_email = Email(
@@ -15,7 +15,6 @@ async def create_email(db: AsyncSession, email_in: EmailCreate) -> Email:
     return db_email
 
 async def get_emails_on_approval(db: AsyncSession, skip: int = 0, limit: int = 100):
-    # В AsyncAlchemy запросы строятся чуть иначе (через select)
     query = select(Email).filter(Email.status == EmailStatus.ON_APPROVAL).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
@@ -27,7 +26,7 @@ async def get_email_by_id(db: AsyncSession, email_id: int):
 
 async def update_email_status(db: AsyncSession, email: Email, status: str):
     email.status = status
-    db.add(email) # Помечаем объект как измененный
+    db.add(email)
     await db.commit()
     await db.refresh(email)
     return email
@@ -53,7 +52,8 @@ async def remove_email(db: AsyncSession, email_id: int):
     return email
 
 
-async def edit_email(db: AsyncSession, email: Email, email_id: int):
+
+async def edit_email(db: AsyncSession, email_id: int, update_data: EmailUpdate):
     result = await db.execute(
         select(Email).where(Email.id == email_id)
     )
@@ -61,4 +61,16 @@ async def edit_email(db: AsyncSession, email: Email, email_id: int):
 
     if not email:
         return None
+
+
+    if update_data.text_content is not None:
+        email.text_content = update_data.text_content
+
+    if update_data.html_content is not None:
+        email.html_content = update_data.html_content
+
+    await db.commit()
+    await db.refresh(email)
+    return email
+
 

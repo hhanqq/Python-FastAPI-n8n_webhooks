@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.schemas.email import EmailCreate, EmailResponse, EmailUpdateStatus
+from app.schemas.email import EmailCreate, EmailResponse, EmailUpdateStatus, EmailUpdate
 from app.models.email import EmailStatus
 from app.crud.email import create_email, get_emails_on_approval, get_email_by_id, update_email_status, remove_email
 from app.services.n8n_wh_emails import send_email_to_n8n
 from app.utils.dependencies import get_current_user
 from app.schemas.user import UserPublic
-from app.crud.email import get_all_emails
+from app.crud.email import get_all_emails, edit_email
 
 
 router = APIRouter(prefix="/emails", tags=["Emails"])
@@ -140,3 +140,26 @@ async def delete_email(
         email_id: int = Path(..., description="ID письма в базе данных", ge=1),
 ):
     return await remove_email(db, email_id)
+
+
+@router.patch(
+    "/{email_id}/edit",
+    response_model=EmailResponse,
+    summary="Редактировать текст письма",
+    description="Позволяет изменить текстовое или HTML содержимое письма."
+)
+async def update_email_text(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[UserPublic, Depends(get_current_user)],
+        email_id: int = Path(..., ge=1),
+        update_data: EmailUpdate = Body(...)
+):
+    email = await edit_email(db, email_id, update_data)
+
+    if not email:
+        raise HTTPException(
+            status_code=404,
+            detail="Email not found"
+        )
+
+    return email

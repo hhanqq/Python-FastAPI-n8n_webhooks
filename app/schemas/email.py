@@ -17,3 +17,8 @@ class EmailResponse(EmailCreate):
 
 class EmailUpdateStatus(BaseModel):
     status: EmailStatus
+
+
+class EmailUpdate(BaseModel):
+    text_content: Optional[str] = None
+    html_content: Optional[str] = None
